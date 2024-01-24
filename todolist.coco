@@ -1,7 +1,31 @@
 coco todolist
 
 state persistent:
+    todos []Todo
     owner Address
 
-endpoint deployer Init!():
-    pass
+class Todo:
+    field id U64
+    field name String
+    field completed Bool
+
+func onlyOwner():
+    observe owner <- todolist.State.owner:
+        if Address(Sender) != owner:
+            throw "Only the owner can do this"
+endpoint deployer InitOwner!():
+    mutate Address(Sender) -> todolist.State.owner
+
+endpoint invokable AddTodo!(name String):
+    onlyOwner()
+    mutate todos <- todolist.State.todos:
+        var newtodo = Todo{id: len(todos), name: name, completed: false}
+        todos = append(todos, newtodo)
+
+endpoint invokable GetTodos() -> (todos []Todo):
+    observe todos <- todolist.State.todos
+
+endpoint invokable MarkTodoCompleted!(id U64):
+    onlyOwner()
+    mutate todos <- todolist.State.todos:
+        todos[id].completed = true
