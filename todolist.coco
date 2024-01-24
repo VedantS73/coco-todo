@@ -1,0 +1,7 @@
+coco todolist
+
+state persistent:
+    owner Address
+
+endpoint deployer Init!():
+    pass
